@@ -27,3 +27,15 @@ class Service1(Resource):
         except IOError:
             return {"message": "Error writing to file"}, 500
         return new_item, 201
+    
+    def delete(self, id):
+        for i, item in enumerate(self.data):
+            if item["id"] == id:
+                del self.data[i]
+                try:
+                    with open(self.datafile, 'w') as f:
+                        json.dump(self.data, f)
+                except IOError:
+                    return {"message": "Error writing to file"}, 500
+                return {"message": "Item deleted"}, 200
+        return {"message": "Item not found"}, 404
