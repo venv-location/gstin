@@ -1,5 +1,8 @@
 import json
 from flask_restful import Resource
+from flask_restful import reqparse
+from marshmallow import ValidationError
+from hotels.models import hotel_schema
 
 class Hotels(Resource):
     def __init__(self):
@@ -18,12 +21,13 @@ class Hotels(Resource):
                 return hotel
         return {"message": "Hotel not found"}, 404
 
-    def post(self, hotel):
+    def post(self):
         try:
-            new_hotel = {"id": len(self.data) + 1, "name": hotel['name'], "location": hotel['location'], "rating": hotel['rating']}
+            new_hotel = hotel_schema.load(reqparse.request.get_json())
             self.data.append(new_hotel)
-        except Exception as e:
+        except ValidationError as e:
             return {"message": "Error creating hotel: " + str(e)}, 500
+        # ...
         try:
             with open(self.datafile, 'w') as f:
                 json.dump(self.data, f)
