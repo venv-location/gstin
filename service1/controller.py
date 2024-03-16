@@ -11,16 +11,19 @@ class Service1(Resource):
             self.data = []
 
     def get(self, id=None):
-        if id:
-            for item in self.data:
-                if item["id"] == id:
-                    return item
-            return {"message": "Item not found"}, 404
-        return self.data
+        if id is None:
+            return self.data
+        for item in self.data:
+            if item["id"] == id:
+                return item
+        return {"message": "Item not found"}, 404
 
     def post(self):
-        new_item = {"id": len(self.data) + 1, "name": "Item " + str(len(self.data) + 1)}
-        self.data.append(new_item)
+        try:
+            new_item = {"id": len(self.data) + 1, "name": "Item " + str(len(self.data) + 1)}
+            self.data.append(new_item)
+        except Exception as e:
+            return {"message": "Error creating item: " + str(e)}, 500
         try:
             with open(self.datafile, 'w') as f:
                 json.dump(self.data, f)
@@ -29,6 +32,9 @@ class Service1(Resource):
         return new_item, 201
     
     def delete(self, id):
+        if id is None:
+            return {"message": "No ID provided"}, 400
+
         for i, item in enumerate(self.data):
             if item["id"] == id:
                 del self.data[i]
